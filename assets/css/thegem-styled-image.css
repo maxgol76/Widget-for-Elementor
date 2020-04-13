@@ -34,3 +34,8 @@
 .gem-wrapbox-style-10 {
     border-color: #dfe5e8;
 }
+
+.elementor-widget-container {
+    min-height: 1px;
+}
+

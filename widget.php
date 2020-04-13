@@ -9,6 +9,8 @@ use Elementor\Group_Control_Background;
 
 use Elementor\Utils;
 use Elementor\Group_Control_Css_Filter;
+use Elementor\Group_Control_Image_Size;
+use Elementor\Icons_Manager;
 
 
 if ( ! defined( 'ABSPATH' ) ) exit;
@@ -36,7 +38,7 @@ class TheGem_StyledImage extends Widget_Base {
 			define( 'THEGEM_ELEMENTOR_WIDGET_STYLED_IMAGE_URL', rtrim( plugin_dir_url( __FILE__ ), ' /\\' ) );
 		}
 
-        wp_register_style( 'thegem-styled-image', THEGEM_ELEMENTOR_WIDGET_STYLED_IMAGE_URL . '/assets/css/thegem-styled-image.css', array(), 1.2 );
+        wp_register_style( 'thegem-styled-image', THEGEM_ELEMENTOR_WIDGET_STYLED_IMAGE_URL . '/assets/css/thegem-styled-image.css', array(), 2.4 );
 
 	}
 
@@ -337,7 +339,6 @@ class TheGem_StyledImage extends Widget_Base {
                 'label_block' => true,
                 'selectors'   => [
                     '{{WRAPPER}} .gem-image' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
-                    '{{WRAPPER}} .gem-image .gem-wrapbox-inner img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
                 ],
             ]
         );
@@ -444,6 +445,20 @@ class TheGem_StyledImage extends Widget_Base {
             ]
         );
 
+        $control->add_responsive_control(
+            'image_radius',
+            [
+                'label'       => __( 'Radius', 'thegem' ),
+                'type'        => Controls_Manager::DIMENSIONS,
+                'size_units'  => [ 'px', '%', 'rem', 'em' ],
+                'separator'   => 'after',
+                'label_block' => true,
+                'selectors'   => [
+                    '{{WRAPPER}} .gem-image .gem-wrapbox-inner img' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                ],
+            ]
+        );
+
         $control->start_controls_tabs( 'image_effects' );
 
         $control->start_controls_tab( 'normal',
@@ -465,7 +480,7 @@ class TheGem_StyledImage extends Widget_Base {
                     ],
                 ],
                 'selectors' => [
-                    '{{WRAPPER}} .gem-image' => 'opacity: {{SIZE}};',
+                    '{{WRAPPER}} .gem-image .gem-wrapbox-inner' => 'opacity: {{SIZE}};',
                 ],
             ]
         );
@@ -474,7 +489,7 @@ class TheGem_StyledImage extends Widget_Base {
             Group_Control_Css_Filter::get_type(),
             [
                 'name'     => 'css_filters',
-                'selector' => '{{WRAPPER}} .gem-image .gem-wrapbox-inner img',
+                'selector' => '{{WRAPPER}} .gem-image .gem-wrapbox-inner',
             ]
         );
 
@@ -499,7 +514,7 @@ class TheGem_StyledImage extends Widget_Base {
                     ],
                 ],
                 'selectors' => [
-                    '{{WRAPPER}} .gem-image:hover .gem-wrapbox-inner img' => 'opacity: {{SIZE}};',
+                    '{{WRAPPER}} .gem-image:hover .gem-wrapbox-inner' => 'opacity: {{SIZE}};',
                 ],
             ]
         );
@@ -508,34 +523,10 @@ class TheGem_StyledImage extends Widget_Base {
             Group_Control_Css_Filter::get_type(),
             [
                 'name' => 'css_filters_hover',
-                'selector' => '{{WRAPPER}} .gem-image .gem-wrapbox-inner img',
+                'selector' => '{{WRAPPER}} .gem-image:hover .gem-wrapbox-inner',
             ]
         );
 
-        $control->add_control(
-            'background_hover_transition',
-            [
-                'label'  => __( 'Transition Duration', 'thegem' ),
-                'type'   => Controls_Manager::SLIDER,
-                'range'  => [
-                    'px' => [
-                        'max' => 3,
-                        'step' => 0.1,
-                    ],
-                ],
-                'selectors' => [
-                    '{{WRAPPER}} .gem-image .gem-wrapbox-inner img' => 'transition-duration: {{SIZE}}s',
-                ],
-            ]
-        );
-
-        $control->add_control(
-            'hover_animation',
-            [
-                'label' => __( 'Hover Animation', 'thegem' ),
-                'type'  => Controls_Manager::HOVER_ANIMATION,
-            ]
-        );
 
         $control->end_controls_tab();
 
@@ -549,6 +540,98 @@ class TheGem_StyledImage extends Widget_Base {
             ]
         );
 
+        $this->add_control(
+            'options_icon',
+            [
+                'label'        => __( 'Icon', 'thegem' ),
+                'type'         => Controls_Manager::SWITCHER,
+                'label_on'     => __( 'On', 'thegem' ),
+                'label_off'    => __( 'Off', 'thegem' ),
+                'return_value' => 'yes',
+                'default'      => 'no',
+            ]
+        );
+
+        $this->add_control(
+            'selected_icon',
+            [
+                'label' => __( '', 'thegem' ),
+                'type' => Controls_Manager::ICONS,
+                'fa4compatibility' => 'icon',
+                'default' => [
+                    'value' => 'far fa-image',
+                    'library' => 'fa-regular',
+                ],
+                'condition' => [
+                    'options_icon' => 'yes',
+                ],
+            ]
+        );
+
+        $this->add_control(
+            'icon_position',
+            [
+                'label' => __( 'Icon Position', 'elementor' ),
+                'type' => Controls_Manager::CHOOSE,
+                'default' => 'center',
+                'options' => [
+                    'left' => [
+                        'title' => __( 'Left', 'elementor' ),
+                        'icon' => 'eicon-h-align-left',
+                    ],
+                    'center' => [
+                        'title' => __( 'Top', 'elementor' ),
+                        'icon' => 'eicon-v-align-top',
+                    ],
+                    'right' => [
+                        'title' => __( 'Right', 'elementor' ),
+                        'icon' => 'eicon-h-align-right',
+                    ],
+                ],
+                'toggle' => false,
+                'condition' => [
+                    'options_icon' => 'yes',
+                ],
+
+                'selectors' => [
+                    '{{WRAPPER}} .gem-image .elementor-icon-box-icon' => 'text-align: {{SIZE}};',
+                ],
+            ]
+        );
+
+        $control->add_responsive_control(
+            'icon_size',
+            [
+                'label' => __( 'Size', 'thegem' ),
+                'type' => Controls_Manager::SLIDER,
+                'default' => [
+                    'unit' => 'px',
+                ],
+                'tablet_default' => [
+                    'unit' => 'px',
+                ],
+                'mobile_default' => [
+                    'unit' => 'px',
+                ],
+                'size_units' => [ 'px', 'em' ],
+                'range' => [
+                    'px' => [
+                        'min' => 1,
+                        'max' => 300,
+                    ],
+                    'em' => [
+                        'min' => 1,
+                        'max' => 20,
+                    ],
+                ],
+                'condition' => [
+                    'options_icon' => 'yes',
+                ],
+                'selectors' => [
+                    '{{WRAPPER}} .gem-image .elementor-icon-box-icon .elementor-icon i' => 'font-size: {{SIZE}}{{UNIT}};',
+                ],
+            ]
+        );
 
 		$control->end_controls_section();
 
@@ -565,6 +648,9 @@ class TheGem_StyledImage extends Widget_Base {
 			[
 				'label' => __( 'Inner spacing', 'thegem' ),
 				'tab' => Controls_Manager::TAB_STYLE,
+                'condition'   => [
+                    'thegem_elementor_preset' => [ 'gem-wrapbox-style-9' , 'gem-wrapbox-style-11'  ],
+                ],
 			]
 		);
 
@@ -605,15 +691,14 @@ class TheGem_StyledImage extends Widget_Base {
         $control->add_control(
             'border_type',
             [
-                'label'   => __('Border Type', 'thegem'),
+                'label'   => __( 'Border Type', 'thegem' ),
                 'type'    => Controls_Manager::SELECT,
-                'default' => 'dashed',
                 'options' => [
-                    'none'   => __('None', 'thegem'),
-                    'solid'  => __('Solid', 'thegem'),
-                    'double' => __('Double', 'thegem'),
-                    'dotted' => __('Dotted', 'thegem'),
-                    'dashed' => __('Dashed', 'thegem'),
+                    'none'   => __( 'None',   'thegem' ),
+                    'solid'  => __( 'Solid',  'thegem' ),
+                    'double' => __( 'Double', 'thegem' ),
+                    'dotted' => __( 'Dotted', 'thegem' ),
+                    'dashed' => __( 'Dashed', 'thegem' ),
                 ],
                 'selectors' => [
                     '{{WRAPPER}} .gem-wrapbox-inner:after' => 'border-style: {{VALUE}};',
@@ -624,7 +709,7 @@ class TheGem_StyledImage extends Widget_Base {
         $control->add_control(
             'border_width',
             [
-                'label' => __('Border Width', 'thegem'),
+                'label' => __( 'Border Width', 'thegem' ),
                 'type'  => Controls_Manager::DIMENSIONS,
                 'size_units'  => [ 'px', '%', 'rem', 'em' ],
                 'label_block' => true,
@@ -690,12 +775,56 @@ class TheGem_StyledImage extends Widget_Base {
 
 		$this->add_inline_editing_attributes( 'content_choose_image', 'none' );
 
-		$preset_path = __DIR__ . '/templates/preset_html1.php';
+        $link = '';
 
-		if ( ! empty( $preset_path) && file_exists( $preset_path ) ){
-			include( $preset_path );
-		}
+		if (  $settings[ 'content_image_link_to' ] === 'file' ) {
+            $link = $settings['content_choose_image']['url'];
+        } elseif ( $settings[ 'content_image_link_to' ] === 'custom' ) {
+            if ( ! empty( $settings[ 'link' ] ['url' ] ) ) {
+               $link = $settings[ 'link' ][ 'url' ];
+            }
+        }
+
+        if ( ! empty( $settings[ 'image_position' ] ) && $settings[ 'image_position' ] == 'gem-wrapbox-position-centered' ) : ?>
+        <div class="centered-box gem-image-centered-box">
+            <?php endif; ?>
+
+            <div class="gem-image gem-wrapbox <?php echo ! empty( $settings[ 'thegem_elementor_preset' ] ) ? esc_attr( $settings[ 'thegem_elementor_preset'] ) : ''?> <?php echo ! empty( $settings[ 'image_position' ] ) ? esc_attr( $settings[ 'image_position'] ) : ''?>">
+
+                <?php if ( ! empty( $settings['selected_icon'] ) ) : ?>
+                    <div class="elementor-icon-box-icon">
+                        <span class="elementor-icon">
+                            <?php Icons_Manager::render_icon( $settings['selected_icon'], [ 'aria-hidden' => 'true' ] ); ?>
+                        </span>
+                    </div>
+                <?php endif; ?>
+
+                <div class="gem-wrapbox-inner">
+                    <?php  /*Adding link if lightbox is true*/
+                    if (  $settings[ 'content_image_link_to' ] == 'custom'  ||
+                          ( ! empty( $settings[ 'open_lightbox' ] ) && $settings[ 'open_lightbox' ] != 'default' ) ) : ?>
+                    <a href="<?php echo $link; ?>" <?php  echo 'data-elementor-open-lightbox="' . $settings[ 'open_lightbox' ] . '"'; ?>>
+                    <?php endif;
+                        /*Adding classes to the img*/
+                        $class = 'class="gem-wrapbox-element img-responsive"';
+                        echo substr_replace( Group_Control_Image_Size::get_attachment_image_html( $settings, 'content_choose_image' ), $class, 5, 0 ); ?>
+                    <?php  /*Adding link if lightbox is yes*/
+                    if (  $settings[ 'content_image_link_to' ] == 'custom'  ||
+                    ( ! empty( $settings[ 'open_lightbox' ] ) && ( $settings[ 'open_lightbox' ] == 'yes'  || $settings[ 'open_lightbox' ] == 'no' ) ) ) : ?>
+                    </a>
+                <?php endif; ?>
+                </div>
+            </div>
+
+            <?php
+            if ( ! empty( $settings[ 'image_position' ] ) && $settings[ 'image_position' ] == 'gem-wrapbox-position-centered' ) : ?>
+        </div>
+            <?php endif; ?>
+        <?php
+
 	}
+
+
 }
 
 \Elementor\Plugin::instance()->widgets_manager->register_widget_type( new TheGem_StyledImage() );
